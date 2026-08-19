@@ -29,6 +29,24 @@ graph TD
     NonDev[17 non-dev agents in non-dev-agents/] -. excluded .-> Orc
 ```
 
+## First-time setup
+
+After cloning, run the setup script **once** to enable automatic protection:
+
+```bash
+# Windows
+setup.bat
+
+# Linux / macOS
+chmod +x setup.sh && ./setup.sh
+```
+
+This does two things:
+1. Restores `.github/copilot-instructions.md` if it's missing.
+2. Activates Git hooks so the file is **automatically restored** on every future `git pull` or `git checkout` — no manual action needed after the first run.
+
+A GitHub Actions workflow also blocks any PR that removes the file.
+
 ## Usage
 
 1. Open this repository in VS Code with GitHub Copilot Chat.

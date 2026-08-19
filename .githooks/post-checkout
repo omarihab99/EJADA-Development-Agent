@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Auto-restore copilot-instructions.md after checkout
+python3 scripts/restore_copilot_instructions.py 2>/dev/null || python scripts/restore_copilot_instructions.py 2>/dev/null

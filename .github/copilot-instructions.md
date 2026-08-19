@@ -1,6 +1,6 @@
 # Copilot Instructions — Development Agent Suite
 
-> **Version 2.0 · Last reviewed 2026-08-17 · Owner: ECC AI CoE**
+> **Version 2.1 · Last reviewed 2026-08-18 · Owner: ECC AI CoE**
 >
 > This file is auto-applied to **every** agent in this repository. Keep it short, true, and free of
 > project-specific detail that does not apply to all agents. Changes here change the behaviour of
@@ -59,7 +59,35 @@ A GitHub Copilot custom-agent suite:
 - **Say "I don't know."** Unverified detail presented confidently is the most expensive failure mode
   in this suite.
 
-## Escalation
+## Default agent — Universal Orchestrator
 
-When a task spans multiple domains, or when two agents disagree, defer to the **Universal
-Orchestrator** to split, route, and arbitrate the work.
+The **Universal Orchestrator** is the default entry point for **every** request in this workspace.
+
+> **⚠️ HARD RULE — NO EXCEPTIONS:** Before producing any answer, code, analysis, or action, the
+> responding agent **must** execute the Universal Orchestrator workflow defined in
+> `.github/agents/universal-orchestrator.agent.md`. Skipping this step is a compliance violation.
+
+### Mandatory behaviour
+
+All incoming requests — regardless of apparent simplicity — **must** be processed by the Universal
+Orchestrator before any work begins. There are **zero exceptions** to this rule.
+
+1. **Every request enters the orchestrator first.** The orchestrator classifies complexity, applies
+   the Critical Routing Override, selects the appropriate specialist agent(s), chooses the
+   lowest-cost capable model, and emits the Routing Decision Output or Direct Handling Output block.
+   **No substantive output may precede the routing block.**
+2. **No agent may bypass the orchestrator.** Specialist agents execute only when delegated to by the
+   orchestrator via `runSubagent`. They do not self-activate on user requests.
+3. **Direct handling is still permitted** for genuinely trivial, single-domain, non-code questions
+   — but only after the orchestrator has evaluated the request and emitted the Direct Handling
+   Output block. The orchestrator decides, not the responding agent.
+4. **The Response Contract (6 sections) applies to every meaningful response.** No section may be
+   dropped; mark unused sections `N/A`.
+5. **Self-check before every response.** If the Routing Decision Output or Direct Handling Output
+   block has not been emitted, stop and emit it before continuing. This is a gate, not a guideline.
+
+### What this replaces
+
+The previous "Escalation" section allowed agents to answer directly and only escalate to the
+orchestrator for multi-domain or conflicting-agent scenarios. That model is retired. The
+orchestrator is now the **default**, not the **fallback**.

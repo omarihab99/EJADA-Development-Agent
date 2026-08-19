@@ -1,0 +1,18 @@
+name: Guard copilot-instructions.md
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify copilot-instructions.md exists
+        run: |
+          if [ ! -f .github/copilot-instructions.md ]; then
+            echo "::error::.github/copilot-instructions.md is missing. Run: python scripts/restore_copilot_instructions.py"
+            exit 1
+          fi

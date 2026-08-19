@@ -13,13 +13,13 @@
 
 | Domain | Agents |
 |---|---:|
-| Frontend & UX | 22 |
+| Frontend & UX | 23 |
 | Planning & Requirements | 20 |
-| MCP Server Development | 19 |
+| MCP Server Development | 17 |
 | AI / Agents / Prompting | 17 |
 | Cloud - Azure | 16 |
+| Testing & QA | 14 |
 | Architecture & Design | 12 |
-| Testing & QA | 12 |
 | Backend - Other | 10 |
 | DevOps / IaC / Platform | 10 |
 | Migration & Modernization | 10 |
@@ -31,7 +31,7 @@
 | Salesforce | 6 |
 | Database & Data | 5 |
 | Mobile | 4 |
-| Documentation | 3 |
+| Documentation | 2 |
 | Observability & Incident | 2 |
 | Backend - Python | 2 |
 | Cloud - Other | 2 |
@@ -61,6 +61,7 @@
 | `react19-dep-surgeon` | `react19-dep-surgeon.agent.md` | unpinned | IDENTICAL |
 | `react19-migrator` | `react19-migrator.agent.md` | unpinned | IDENTICAL |
 | `react19-test-guardian` | `react19-test-guardian.agent.md` | unpinned | IDENTICAL |
+| `Search & AI Optimization Expert` | `search-ai-optimization-expert.agent.md` | unpinned | IDENTICAL |
 | `Shopify Expert` | `shopify-expert.agent.md` | RETIRED | IDENTICAL |
 | `WinForms Expert` | `WinFormsExpert.agent.md` | unpinned | IDENTICAL |
 
@@ -96,8 +97,6 @@
 | `Amplitude Experiment Implementation` | `amplitude-experiment-implementation.agent.md` | unpinned | IDENTICAL |
 | `C# MCP Server Expert` | `csharp-mcp-expert.agent.md` | RETIRED | IDENTICAL |
 | `Comet Opik` | `comet-opik.agent.md` | unpinned | IDENTICAL |
-| `DevTools Regression Investigator` | `devtools-regression-investigator.agent.md` | RETIRED | IDENTICAL |
-| `Frontend Performance Investigator` | `frontend-performance-investigator.agent.md` | RETIRED | IDENTICAL |
 | `Go MCP Server Development Expert` | `go-mcp-expert.agent.md` | RETIRED | IDENTICAL |
 | `Java MCP Expert` | `java-mcp-expert.agent.md` | RETIRED | IDENTICAL |
 | `Kotlin MCP Server Development Expert` | `kotlin-mcp-expert.agent.md` | RETIRED | IDENTICAL |
@@ -180,6 +179,8 @@
 | `Accessibility Expert` | `accessibility.agent.md` | RETIRED | IDENTICAL |
 | `Accessibility Runtime Tester` | `accessibility-runtime-tester.agent.md` | RETIRED | IDENTICAL |
 | `CAST Imaging Structural Quality Advisor Agent` | `cast-imaging-structural-quality-advisor.agent.md` | unpinned | IDENTICAL |
+| `DevTools Regression Investigator` | `devtools-regression-investigator.agent.md` | RETIRED | IDENTICAL |
+| `Frontend Performance Investigator` | `frontend-performance-investigator.agent.md` | RETIRED | IDENTICAL |
 | `gem-browser-tester` | `gem-browser-tester.agent.md` | unpinned | DRIFTED |
 | `gem-debugger` | `gem-debugger.agent.md` | unpinned | DRIFTED |
 | `Markdown Accessibility Assistant` | `markdown-accessibility-assistant.agent.md` | SUNSET-0901 | IDENTICAL |
@@ -331,7 +332,6 @@
 | Agent name (delegate by this) | File | Model status | Drift |
 |---|---|---|---|
 | `gem-documentation-writer` | `gem-documentation-writer.agent.md` | unpinned | DRIFTED |
-| `Search & AI Optimization Expert` | `search-ai-optimization-expert.agent.md` | unpinned | IDENTICAL |
 | `VSCode Tour Expert` | `code-tour.agent.md` | unpinned | IDENTICAL |
 
 ## Observability & Incident

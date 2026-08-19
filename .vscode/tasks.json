@@ -1,0 +1,33 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Restore copilot-instructions if missing",
+      "type": "shell",
+      "command": "python",
+      "args": ["scripts/restore_copilot_instructions.py"],
+      "runOptions": {
+        "runOn": "folderOpen"
+      },
+      "presentation": {
+        "reveal": "silent",
+        "close": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Setup git hooks",
+      "type": "shell",
+      "command": "git",
+      "args": ["config", "core.hooksPath", ".githooks"],
+      "runOptions": {
+        "runOn": "folderOpen"
+      },
+      "presentation": {
+        "reveal": "silent",
+        "close": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}
