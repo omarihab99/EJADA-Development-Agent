@@ -44,7 +44,7 @@ Resolution order for the orchestrator and for any agent author:
 
 | Task class | Default | Fallback | Rationale |
 |---|---|---|---|
-| Orchestration, multi-agent planning, arbitration | `Claude Opus 5` | `GPT-5.6 Sol` | Long-horizon reasoning over many simultaneous constraints |
+| Orchestration, multi-agent planning, arbitration | `Claude Sonnet 5` | `Claude Opus 5` | Use Sonnet for routine routing; escalate to Opus for high-consequence arbitration, irreconcilable constraints, or extended-context work |
 | Architecture, ADRs, threat modelling, hard debugging | `Claude Opus 5` | `Claude Opus 4.8` | High consequence, low volume — justify the premium |
 | Day-to-day coding, refactor, review, agentic edits | `Claude Sonnet 5` | `GPT-5.4` | Best quality-per-credit for the bulk of the work |
 | Autonomous multi-file implementation runs | `GPT-5.3-Codex` | `Claude Sonnet 5` | Purpose-built for long coding sessions |

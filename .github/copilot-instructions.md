@@ -1,10 +1,34 @@
 # Copilot Instructions — Development Agent Suite
 
-> **Version 2.1 · Last reviewed 2026-08-18 · Owner: ECC AI CoE**
+> **Version 2.2 · Last reviewed 2026-08-19 · Owner: ECC AI CoE**
 >
 > This file is auto-applied to **every** agent in this repository. Keep it short, true, and free of
 > project-specific detail that does not apply to all agents. Changes here change the behaviour of
 > all 225 agents — treat edits as a change-controlled action.
+
+---
+
+## ⚠️ FIRST — Run the Universal Orchestrator on Every Request
+
+**This is the single most important rule in this file. Process it before anything else.**
+
+Before producing ANY substantive output (code, analysis, plan, answer, or action), the host agent
+**MUST** call `runSubagent` with the **Universal Orchestrator**. Pass the user's full request.
+The orchestrator will return a response that includes the routing block and the answer.
+
+**The host agent does NOT produce answers itself.** It is a pass-through:
+
+1. Receive user request.
+2. Call `runSubagent` → `Universal Orchestrator` with the full user request.
+3. Present the orchestrator's returned output to the user verbatim.
+
+That's it. The orchestrator handles everything — classification, routing block emission, specialist
+delegation (or direct handling), and the final answer.
+
+**Self-check gate:** If you are about to write an answer without having called the Universal
+Orchestrator first — STOP. Call it now. The host agent never answers directly.
+
+---
 
 ## What this repository is
 
@@ -37,6 +61,7 @@ A GitHub Copilot custom-agent suite:
 
 ## Shared engineering guidelines (all agents)
 
+- **Agent identification:** Begin every response with exactly one routing line in this format: `🤖 Agent: <exact agent name>`.
 - Respect the existing project structure, conventions, dependencies, and target versions. Explore
   before changing; align new code with what is already there.
 - Prefer minimal, focused changes that directly serve the request. Avoid over-engineering.
@@ -81,10 +106,36 @@ Orchestrator before any work begins. There are **zero exceptions** to this rule.
 3. **Direct handling is still permitted** for genuinely trivial, single-domain, non-code questions
    — but only after the orchestrator has evaluated the request and emitted the Direct Handling
    Output block. The orchestrator decides, not the responding agent.
-4. **The Response Contract (6 sections) applies to every meaningful response.** No section may be
-   dropped; mark unused sections `N/A`.
+4. **Response Contract tiers** (see `governance/RESPONSE_CONTRACT_AND_VALIDATION.md`):
+   - **Compact** — trivial / advisory / no file changes: sections 1–2 only.
+   - **Standard** — moderate / file changes: sections 1–5.
+   - **Full** — multi-agent / governance / production: all 6 sections.
+   The orchestrator selects the tier and states it in the routing block. No section may be dropped
+   within the selected tier; mark unused sections `N/A`.
 5. **Self-check before every response.** If the Routing Decision Output or Direct Handling Output
    block has not been emitted, stop and emit it before continuing. This is a gate, not a guideline.
+
+### Host agent execution protocol
+
+When operating in VS Code chat, the **host agent** (GitHub Copilot) is a pass-through. It does
+**one thing only**: call `runSubagent` with the Universal Orchestrator.
+
+```
+User request → Host calls runSubagent("Universal Orchestrator", <full request>) → Present output
+```
+
+The host agent **NEVER**:
+- Produces answers itself.
+- Emits routing blocks itself (the orchestrator does that).
+- Picks specialist agents itself (the orchestrator does that).
+- Skips the orchestrator call for "simple" questions.
+
+The Universal Orchestrator returns a complete response including:
+- The routing block (🤖 / 📊 / ✅ / 💰)
+- The substantive answer (from itself if direct, or from the specialist it delegated to)
+- The Response Contract sections (for non-trivial work)
+
+The host agent presents this output to the user as-is.
 
 ### What this replaces
 

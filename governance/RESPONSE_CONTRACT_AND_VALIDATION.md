@@ -7,8 +7,18 @@ Applies to the Universal Orchestrator and to any agent producing a decision-grad
 
 ## Part A — Response Contract
 
-Six sections, in order, on every meaningful response. Mark `N/A` rather than dropping a section, so
-omissions stay visible.
+Three tiers. The orchestrator selects the tier based on request complexity; the selected tier is
+stated in the routing block. Higher tiers include all sections from lower tiers.
+
+### Tier selection
+
+| Tier | When to use | Required sections |
+|---|---|---|
+| **Compact** | Trivial / single-domain / advisory / no file changes | 1 Assigned Agent, 2 On-the-spot answer |
+| **Standard** | Moderate complexity, file changes, or follow-up work | 1–5 (add Handoff Prompt, Artifact Pack, Next Actions) |
+| **Full** | Multi-agent, governance, regulated, production, or multi-stakeholder work | 1–6 (add Tracker Update) |
+
+Mark unused optional sections `N/A` rather than dropping them, so omissions stay visible.
 
 ### Template
 
