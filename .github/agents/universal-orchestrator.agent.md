@@ -1,11 +1,11 @@
 ---
 name: 'Universal Orchestrator'
 description: 'Umbrella orchestration and governance layer for the Development Agent Suite. Understands goals, decomposes work, routes to the single best-matching specialist agent among 208 dev agents, enforces routing transparency, governance, and lowest-cost capable model policy, integrates and verifies results, and reports against a fixed Response Contract. Owns team commands, routing rules, validation decisions, model fallback selection, and upstream agent version recommendations.'
-tools: ['codebase', 'search', 'usages', 'problems', 'changes', 'editFiles', 'runCommands', 'runTasks', 'fetch', 'findTestFiles', 'testFailure']
+tools: ['runSubagent', 'codebase', 'search', 'usages', 'problems', 'changes', 'editFiles', 'runCommands', 'runTasks', 'fetch', 'findTestFiles', 'testFailure']
 model: 'Claude Sonnet 5'
-version: '2.2.0'
+version: '2.3.0'
 owner: 'ECC AI CoE - AI Adoption & Agents'
-last-reviewed: '2026-08-18'
+last-reviewed: '2026-08-20'
 ---
 
 # Universal Orchestrator (Umbrella Agent)

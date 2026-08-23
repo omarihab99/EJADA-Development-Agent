@@ -1,3 +1,9 @@
 {
-  "chat.agent.defaultMode": "Universal Orchestrator"
+  // No VS Code setting exists to force a default custom agent for new chats.
+  // Reliable enforcement is manual selection of "Universal Orchestrator" in the
+  // agent picker, backed by the self-check gate in .github/copilot-instructions.md.
+  "chat.useAgentSkills": true,
+  "chat.agentFilesLocations": {
+    ".github/agents": true
+  }
 }

@@ -1,6 +1,6 @@
 # Copilot Instructions — Development Agent Suite
 
-> **Version 2.2 · Last reviewed 2026-08-19 · Owner: ECC AI CoE**
+> **Version 2.3 · Last reviewed 2026-08-20 · Owner: ECC AI CoE**
 >
 > This file is auto-applied to **every** agent in this repository. Keep it short, true, and free of
 > project-specific detail that does not apply to all agents. Changes here change the behaviour of
@@ -8,25 +8,33 @@
 
 ---
 
-## ⚠️ FIRST — Run the Universal Orchestrator on Every Request
+## ⚠️ FIRST — Route Through the Universal Orchestrator
 
 **This is the single most important rule in this file. Process it before anything else.**
 
-Before producing ANY substantive output (code, analysis, plan, answer, or action), the host agent
-**MUST** call `runSubagent` with the **Universal Orchestrator**. Pass the user's full request.
-The orchestrator will return a response that includes the routing block and the answer.
+Before producing ANY substantive output (code, analysis, plan, answer, or action), the responding
+agent **MUST** delegate the user's full request to the **Universal Orchestrator** agent by calling
+`runSubagent` with agent name `Universal Orchestrator`.
 
-**The host agent does NOT produce answers itself.** It is a pass-through:
+### How automatic routing works
 
-1. Receive user request.
-2. Call `runSubagent` → `Universal Orchestrator` with the full user request.
-3. Present the orchestrator's returned output to the user verbatim.
+The Universal Orchestrator is a custom agent defined at
+`.github/agents/universal-orchestrator.agent.md`. It holds the `runSubagent` tool and is the
+**only** agent authorized to delegate to the 208 specialist agents.
 
-That's it. The orchestrator handles everything — classification, routing block emission, specialist
-delegation (or direct handling), and the final answer.
+**Routing happens in one of two ways:**
 
-**Self-check gate:** If you are about to write an answer without having called the Universal
-Orchestrator first — STOP. Call it now. The host agent never answers directly.
+1. **User selects the Universal Orchestrator directly** from the VS Code agent picker (`@Universal
+   Orchestrator`). This is the preferred and most reliable path — the orchestrator receives the
+   request, classifies it, and delegates to the right specialist.
+
+2. **Any agent that receives a request first** must call `runSubagent` with `Universal Orchestrator`
+   and pass the user's full request. The orchestrator returns the complete answer including routing
+   block and specialist output. Present that output to the user.
+
+**Self-check gate:** If you are about to produce an answer without having routed through the
+Universal Orchestrator first — STOP. Call `runSubagent("Universal Orchestrator", <full request>)`
+now. Only the Universal Orchestrator may decide whether to handle directly or delegate.
 
 ---
 
@@ -89,8 +97,8 @@ A GitHub Copilot custom-agent suite:
 The **Universal Orchestrator** is the default entry point for **every** request in this workspace.
 
 > **⚠️ HARD RULE — NO EXCEPTIONS:** Before producing any answer, code, analysis, or action, the
-> responding agent **must** execute the Universal Orchestrator workflow defined in
-> `.github/agents/universal-orchestrator.agent.md`. Skipping this step is a compliance violation.
+> responding agent **must** route through the Universal Orchestrator. The orchestrator is defined in
+> `.github/agents/universal-orchestrator.agent.md` and holds the `runSubagent` tool for delegation.
 
 ### Mandatory behaviour
 
@@ -115,27 +123,28 @@ Orchestrator before any work begins. There are **zero exceptions** to this rule.
 5. **Self-check before every response.** If the Routing Decision Output or Direct Handling Output
    block has not been emitted, stop and emit it before continuing. This is a gate, not a guideline.
 
-### Host agent execution protocol
+### How to invoke the orchestrator
 
-When operating in VS Code chat, the **host agent** (GitHub Copilot) is a pass-through. It does
-**one thing only**: call `runSubagent` with the Universal Orchestrator.
+There are two reliable ways to ensure the orchestrator runs:
 
+**Option A — Select it directly (most reliable):**
+In VS Code chat, pick `@Universal Orchestrator` from the agent selector before typing your request.
+The orchestrator receives the request directly, classifies it, and delegates as needed.
+
+**Option B — Any agent delegates to it:**
+If a request lands on any other agent (including the base Copilot agent), that agent calls:
 ```
-User request → Host calls runSubagent("Universal Orchestrator", <full request>) → Present output
+runSubagent("Universal Orchestrator", "<full user request>")
 ```
+and presents the returned output verbatim. This requires the calling agent to have `runSubagent`
+in its tool list, or for VS Code to surface `runSubagent` to the active agent.
 
-The host agent **NEVER**:
-- Produces answers itself.
-- Emits routing blocks itself (the orchestrator does that).
-- Picks specialist agents itself (the orchestrator does that).
-- Skips the orchestrator call for "simple" questions.
+### Why Option A is preferred
 
-The Universal Orchestrator returns a complete response including:
-- The routing block (🤖 / 📊 / ✅ / 💰)
-- The substantive answer (from itself if direct, or from the specialist it delegated to)
-- The Response Contract sections (for non-trivial work)
-
-The host agent presents this output to the user as-is.
+The base Copilot host agent does **not** always have access to `runSubagent` — it depends on the
+VS Code session and extension configuration. When the host agent cannot call `runSubagent`, the
+orchestrator workflow cannot trigger automatically. Selecting `@Universal Orchestrator` directly
+bypasses this limitation entirely.
 
 ### What this replaces
 
