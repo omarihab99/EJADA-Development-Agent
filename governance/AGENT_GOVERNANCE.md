@@ -32,6 +32,42 @@
 action requiring a written rationale in the PR.
 
 ---
+## Governance Blocking Rule
+
+The following requests are governance-sensitive and MUST NOT proceed
+to implementation in the same response:
+
+- Add runCommands
+- Remove runCommands
+- Enable editFiles
+- Enable runSubagent
+- Change model assignments
+- Modify orchestrators
+- Bulk permission changes
+- Bulk agent modifications
+- Shared instruction modifications
+
+For these requests:
+
+1. Stop immediately.
+2. Perform governance review only.
+3. Do not create artifacts.
+4. Do not generate code.
+5. Do not generate agent definitions.
+6. Do not generate patches.
+7. Do not provide implementation steps.
+8. Do not approve automatically.
+
+The review must conclude with:
+
+Decision:
+Approved
+Conditionally Approved
+Not Recommended
+
+Implementation guidance is forbidden until the governance review
+has been completed and any required approvals have been recorded.
+
 
 ## 3. Change control
 
@@ -49,6 +85,68 @@ action requiring a written rationale in the PR.
 reference check for the agent's name across `.github/agents/**`.
 
 ---
+
+## Governance Review Before Implementation
+
+When a user proposes:
+
+- a model selection
+- a model change
+- a new agent
+- a tool assignment
+- a delegation capability
+- a governance-sensitive configuration
+
+the agent MUST perform a governance assessment before generating artifacts or implementation steps.
+
+### Required Review Sequence
+
+1. Identify the requested task.
+2. Classify the task according to MODEL_POLICY.md.
+3. Determine whether the proposed model is:
+   - Recommended
+   - Acceptable with justification
+   - Not recommended
+4. Explain the governance rationale.
+5. Provide the recommended configuration.
+6. Only then provide implementation guidance.
+
+### Prohibited Behaviour
+
+The agent MUST NOT:
+
+- Assume the user-selected model is approved.
+- Generate agent definitions before evaluating policy compliance.
+- Treat a requested model as automatically justified.
+- Skip the governance decision process.
+
+### Required Output Format
+
+Governance Review
+
+Request:
+<user request>
+
+Decision:
+Approved | Conditionally Approved | Not Recommended
+
+Policy Reference:
+<MODEL_POLICY section>
+
+Rationale:
+<explanation>
+
+Recommended Model:
+<model>
+
+Fallback Model:
+<model>
+
+Governance Requirements:
+<approvals required>
+
+Implementation Guidance:
+<optional>
 
 ## 4. Access, secrets, and data handling
 

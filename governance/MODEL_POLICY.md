@@ -1,146 +1,82 @@
-# GitHub Copilot Model Policy — Development Agent Suite
+# GitHub Copilot Model Policy - Development Agent Suite
 
-**Version 1.0 · Verified 2026-08-17 against `docs.github.com` → Copilot → Reference → AI models → Supported models**
-**Re-verify monthly. Model availability and retirement dates change without notice.**
+**Version 1.1 | Effective 2026-08-19**  
+**Live support status must be re-verified before merge. The audit output, not this prose, is authoritative for suite counts.**
 
----
+## 1. Decision principle
 
-## 1. Why this policy exists
+Choose the least expensive currently supported model that reliably satisfies task complexity, consequence, context, latency, and tool-use needs. A user preference is an input, not an approval. Premium selection requires positive justification.
 
-An agent's `model:` frontmatter is optional. When absent, the model is whatever the user happens to
-have selected in their picker — so the same agent produces different quality, cost, and latency for
-different people, and results are not reproducible.
+## 2. Mandatory decision sequence
 
-**Current suite state (audited 2026-08-17, 225 files):**
+1. Identify the agent purpose and concrete tasks.
+2. Rate complexity: low, standard, high, or long-horizon.
+3. Rate consequence: low, medium, or high.
+4. Identify context size, latency, coding autonomy, and tool-use needs.
+5. Map to a task class.
+6. Check live supported-model status and organization enablement.
+7. Compare the proposed model with the default and fallback.
+8. Challenge overpowered selections and document exceptions.
+9. Record model, fallback, rationale, verification date, and approver in the registry.
 
-| Status | Count | Meaning |
-|---|---:|---|
-| No `model:` declared | 142 | Behaviour depends on the user's picker |
-| Pins a **retired** model | 56 | Pin is dead; Copilot falls back silently |
-| Pins a model **retiring 2026-09-01** | 17 | Breaks in 15 days |
-| Pins a **utility-only** model | 2 | Not selectable in the picker |
-| Malformed value | 4 | List literal / YAML list item / pipe-delimited string |
-| Currently valid | 4 | — |
+## 3. Task-class policy
 
-**Only 4 of 225 agents carry a valid, current model pin** — `azure-smart-city-iot-architect`,
-`azure-verified-modules-owner-triage`, `cloud-saas-outage-triage`, and `ember`.
-Counts are produced by `scripts/model_audit.py`; that tool is authoritative over this table.
-
----
-
-## 2. Selection rules
-
-Resolution order for the orchestrator and for any agent author:
-
-1. Agent declares a **currently supported** model → use it.
-2. Agent declares a **retired, utility-only, or malformed** model → ignore the pin, select by task
-   class (Section 3), and **disclose the substitution** in the response.
-3. Agent declares **nothing** → select by task class.
-4. Org policy blocks the selection → next row in the same task class → then `Auto`.
-
----
-
-## 3. Task-class defaults
-
-| Task class | Default | Fallback | Rationale |
+| Task class | Default | Fallback | Use when |
 |---|---|---|---|
-| Orchestration, multi-agent planning, arbitration | `Claude Sonnet 5` | `Claude Opus 5` | Use Sonnet for routine routing; escalate to Opus for high-consequence arbitration, irreconcilable constraints, or extended-context work |
-| Architecture, ADRs, threat modelling, hard debugging | `Claude Opus 5` | `Claude Opus 4.8` | High consequence, low volume — justify the premium |
-| Day-to-day coding, refactor, review, agentic edits | `Claude Sonnet 5` | `GPT-5.4` | Best quality-per-credit for the bulk of the work |
-| Autonomous multi-file implementation runs | `GPT-5.3-Codex` | `Claude Sonnet 5` | Purpose-built for long coding sessions |
-| Large-codebase survey / migration analysis | `Claude Opus 5` (1M context) | `GPT-5.6 Terra` | Extended context is a requirement, not a preference |
-| Tests, docs, changelogs, boilerplate | `GPT-5 mini` | `Claude Haiku 4.5` | High volume, low judgement — protect the budget |
-| Fast interactive Q&A, terminal help | `Claude Haiku 4.5` | `GPT-5.4 mini` | Latency over depth |
-| Unclassifiable / mixed | `Auto` | — | Note the choice in the report |
+| Orchestration and multi-agent arbitration | `Claude Opus 5` | `GPT-5.6 Sol` | Long-horizon routing across competing constraints |
+| Architecture, threat modelling, hard debugging | `Claude Opus 5` | `Claude Opus 4.8` | High-consequence reasoning with justified premium use |
+| Day-to-day coding, refactor, review, agentic edits | `Claude Sonnet 5` | `GPT-5.4` | Standard engineering work |
+| Autonomous multi-file implementation | `GPT-5.3-Codex` | `Claude Sonnet 5` | Long coding sessions with validated tool permissions |
+| Large-codebase survey or migration analysis | `Claude Opus 5` | `GPT-5.6 Terra` | Extended context is demonstrably required |
+| Tests, docs, changelogs, boilerplate, simple formatting | `GPT-5 mini` | `Claude Haiku 4.5` | High-volume, low-judgement work |
+| Fast interactive Q&A and terminal guidance | `Claude Haiku 4.5` | `GPT-5.4 mini` | Latency prioritized over depth |
+| Unclassifiable or mixed | `Auto` | N/A | Requirements are not yet stable |
 
-**Extended capability guidance:** the 1M-token context window and configurable reasoning levels both
-increase credit consumption. Use standard context and standard reasoning by default; escalate only
-for genuinely large or genuinely hard tasks, and say why.
+A simple markdown formatter, spelling corrector, routine FAQ agent, or templated document generator normally maps to the low-cost class. `Claude Opus 5` is **Not recommended** unless documented high-consequence reasoning changes the task class.
 
----
+## 4. Decision categories
 
-## 4. Model status reference (as verified 2026-08-17)
+- **Recommended:** Policy default or a cheaper option proven sufficient.
+- **Acceptable with justification:** Supported alternative with explicit quality, latency, context, data, or availability justification and required approval.
+- **Not recommended:** Oversized, retired, utility-only, malformed, blocked, or unsupported for the task.
 
-### Currently GA and safe to pin
+## 5. Required output for model requests
 
-`Claude Opus 5` · `Claude Sonnet 5` · `Claude Opus 4.7` · `Claude Opus 4.8` · `Claude Haiku 4.5` ·
-`GPT-5.5` · `GPT-5.6 Luna` · `GPT-5.6 Sol` · `GPT-5.6 Terra` · `GPT-5.4` · `GPT-5.4 mini` ·
-`GPT-5 mini` · `GPT-5.3-Codex` · `Gemini 3.5 Flash` · `Gemini 3.6 Flash` · `Gemini 3.7 Flash` ·
-`MAI-Code-1-Flash` · `MAI-Code-1.1-Flash` · `Grok 4.5` · `Grok 4.6`
+```markdown
+## Governance Review
+**Request:** <request>
+**Decision:** Approved | Conditionally Approved | Not Recommended
+**Task class:** <class>
+**Policy reference:** MODEL_POLICY.md section 3
+**Complexity/consequence:** <assessment>
+**Rationale:** <quality, cost, latency, context, and governance explanation>
+**Recommended model:** <model>
+**Fallback model:** <model>
+**Governance requirements:** <approval, verification, tests>
+**Implementation guidance:** <only after the decision>
+```
 
-### Approval-gated
+## 6. Premium-model challenge
 
-| Model | Constraint |
-|---|---|
-| `Claude Fable 5` | Distinct data-retention posture; not eligible for default enablement; enterprise must explicitly enable |
-| `Kimi K2.7 Code`, `Kimi K3` | Open weight; not eligible for default enablement |
-| Evaluation models (codenamed) | May underperform on security prompts; may change or vanish without notice |
+Before approving a premium model, answer all of the following:
 
-### Retiring **2026-09-01** — migrate now
+- What requirement cannot be met by the class default?
+- What evidence or test demonstrates the gap?
+- Is the task high consequence, long horizon, or genuinely large context?
+- What is the expected usage volume and budget impact?
+- Who approves the exception and when will it be reviewed?
 
-| Retiring | Replace with |
-|---|---|
-| `Claude Sonnet 4.5` | `Claude Sonnet 5` |
-| `Claude Sonnet 4.6` | `Claude Sonnet 5` |
-| `Claude Opus 4.5` | `Claude Opus 5` |
-| `Claude Opus 4.6` | `Claude Opus 5` |
-| `Gemini 3.1 Pro` | `Gemini 3.6 Flash` |
-| `Raptor mini` | `MAI-Code-1-Flash` |
+If these answers are missing, recommend the task-class default and mark the premium request `Not Recommended` or `Conditionally Approved` pending evidence.
 
-### Already retired — any pin to these is dead
+## 7. Status and substitution
 
-| Retired model | Date | Replace with |
-|---|---|---|
-| `GPT-4.1` | 2026-06-01 | `GPT-5.5` |
-| `GPT-5.2`, `GPT-5.2-Codex` | 2026-06-01 | `GPT-5.5` / `GPT-5.3-Codex` |
-| `Grok Code Fast 1` | 2026-05-15 | `GPT-5 mini` |
-| `Claude Sonnet 4` | 2026-05-01 | `Claude Sonnet 5` |
-| `GPT-5.1` | 2026-04-15 | `GPT-5.3-Codex` |
-| `GPT-5.1-Codex` / `-Max` / `-Mini` | 2026-04-01 | `GPT-5.3-Codex` |
-| `Gemini 3 Pro` | 2026-03-26 | `Gemini 3.6 Flash` |
-| `GPT-5`, `GPT-5-Codex`, `Claude Opus 4.1` | 2026-02-17 | `GPT-5.5` / `GPT-5.3-Codex` / `Claude Opus 5` |
-| `Claude Sonnet 3.5` | 2025-11-06 | `Claude Haiku 4.5` |
-| `Claude Opus 4`, `Claude Sonnet 3.7 (+Thinking)`, `Gemini 2.0 Flash`, `o1-mini`, `o3`, `o3-mini`, `o4-mini` | 2025-10-23 | See successor column in GitHub docs |
-| `Gemini 2.5 Pro`, `Gemini 3 Flash` | 2026-07-31 | `Gemini 3.6 Flash` |
+- A valid supported pin may be used if it matches the task class.
+- Retired, sunset, utility-only, malformed, blocked, or unavailable pins must not be treated as approved.
+- An absent pin requires task-class selection.
+- Any substitution must be disclosed in the Response Contract.
+- Update the policy status sets and audit script together after live verification.
+- Never hard-code an unverified retirement claim into a governance finding. Cite the audit or live verification evidence.
 
-### Utility-only — never pin
+## 8. Verification tests
 
-`GPT-4o` · `GPT-4o mini` · `GPT-4.1` · `GPT-5.4 nano` — these power background features and are not
-selectable in the model picker.
-
----
-
-## 5. Remediation mapping for this suite
-
-Apply with `python scripts/model_audit.py --fix` (writes proposed frontmatter changes; review the
-diff before committing).
-
-| Current pin in suite | Files | Status | Action |
-|---|---:|---|---|
-| `GPT-4.1` (all casings/quotings) | 30 | Retired 2026-06-01 | → task-class default; mostly specialist coding agents → `Claude Sonnet 5` |
-| `GPT-5` / `gpt-5` | 18 | Retired 2026-02-17 | → `GPT-5.5`, or `Claude Sonnet 5` for coding agents |
-| `Claude Sonnet 4.5` variants | 10 | **Retires 2026-09-01** | → `Claude Sonnet 5` — do these first |
-| `Claude Sonnet 4.6` variants | 7 | **Retires 2026-09-01** | → `Claude Sonnet 5` — do these first |
-| `Claude Sonnet 4` / `claude-sonnet-4` | 4 | Retired 2026-05-01 | → `Claude Sonnet 5` |
-| `claude-3.5-sonnet` | 4 | Retired 2025-11-06 | → `Claude Haiku 4.5` (all four are Salesforce agents; volume work) |
-| `gpt-4o`, `gpt-4` | 2 | Utility-only | → task-class default (utility pins are never selectable) |
-| Malformed (list literal, `- GPT-4.1`, pipe-delimited ×2) | 4 | Invalid YAML scalar | → single valid string per task class |
-| No pin | 142 | Undefined | → add pin per task class, prioritising T1 sub-orchestrators and high-traffic agents |
-
-**Unpinned agents by proposed task class:** coding 60 · tests 23 · architecture 21 ·
-orchestration 12 · docs 10 · codex-autonomy 10 · fast-interactive 6.
-
-**Sequencing recommendation:** fix the 17 files retiring 2026-09-01 first (hard deadline), then the
-58 retired pins, then the 142 unpinned agents in traffic order. Do not attempt all 225 in one PR.
-
----
-
-## 6. Verification procedure
-
-1. Run `python scripts/model_audit.py --report`.
-2. Compare the model lists in Section 4 against the live GitHub supported-models page.
-3. Update Section 4 and the `RETIRED` / `SUNSET` sets inside `scripts/model_audit.py` together —
-   they must not diverge.
-4. Record the verification date at the top of this file.
-5. If a model in Section 3 has been retired, replace it in the task-class table **before** the
-   retirement date, not after.
+For each model change, test representative easy, normal, and edge prompts; verify correctness, format adherence, latency, tool behavior, and failure handling. Record the selected model, fallback, date, evaluator, and result. A cheaper model wins when it passes the same acceptance criteria.
