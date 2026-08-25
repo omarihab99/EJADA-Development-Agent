@@ -1,10 +1,10 @@
-# GitHub Copilot Model Policy — Development Agent Suite
+# GitHub Copilot Model Policy - Development Agent Suite
 
 > **Version 1.1 · Last reviewed 2026-08-24 · Owner: ECC AI CoE**
 >
 > Re-verify supported models, retirement status, organization availability, and approval requirements monthly and before release.
 
----
+## 1. Decision principle
 
 ## 1. Purpose
 
@@ -79,7 +79,7 @@ Premium escalation requires at least one documented reason:
 - Observed lower-cost-model failure
 - Explicit user request after cost disclosure
 
----
+## 4. Decision categories
 
 ## 4. Cost optimization
 
