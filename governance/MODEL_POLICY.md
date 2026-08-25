@@ -1,146 +1,226 @@
 # GitHub Copilot Model Policy — Development Agent Suite
 
-**Version 1.0 · Verified 2026-08-17 against `docs.github.com` → Copilot → Reference → AI models → Supported models**
-**Re-verify monthly. Model availability and retirement dates change without notice.**
+> **Version 1.1 · Last reviewed 2026-08-24 · Owner: ECC AI CoE**
+>
+> Re-verify supported models, retirement status, organization availability, and approval requirements monthly and before release.
 
 ---
 
-## 1. Why this policy exists
+## 1. Purpose
 
-An agent's `model:` frontmatter is optional. When absent, the model is whatever the user happens to
-have selected in their picker — so the same agent produces different quality, cost, and latency for
-different people, and results are not reproducible.
+This policy defines model validation and resolution for custom agents.
 
-**Current suite state (audited 2026-08-17, 225 files):**
+It distinguishes:
 
-| Status | Count | Meaning |
-|---|---:|---|
-| No `model:` declared | 142 | Behaviour depends on the user's picker |
-| Pins a **retired** model | 56 | Pin is dead; Copilot falls back silently |
-| Pins a model **retiring 2026-09-01** | 17 | Breaks in 15 days |
-| Pins a **utility-only** model | 2 | Not selectable in the picker |
-| Malformed value | 4 | List literal / YAML list item / pipe-delimited string |
-| Currently valid | 4 | — |
+- **Declared Model**: `model:` in the target agent frontmatter
+- **Model Status**: supported, retiring, retired, utility-only, malformed, unavailable, blocked, approval-gated, or not declared
+- **Resolved Model**: configured model retained or policy result recommended after validation
+- **Parent Session Model**: model displayed for the Universal Orchestrator session
+- **Observed Runtime Model**: actual specialist execution model only when platform telemetry explicitly exposes it
 
-**Only 4 of 225 agents carry a valid, current model pin** — `azure-smart-city-iot-architect`,
-`azure-verified-modules-owner-triage`, `cloud-saas-outage-triage`, and `ember`.
-Counts are produced by `scripts/model_audit.py`; that tool is authoritative over this table.
+The parent session model is not proof of the delegated specialist runtime model.
 
 ---
 
-## 2. Selection rules
+## 2. Resolution order
 
-Resolution order for the orchestrator and for any agent author:
+Apply in this order:
 
-1. Agent declares a **currently supported** model → use it.
-2. Agent declares a **retired, utility-only, or malformed** model → ignore the pin, select by task
-   class (Section 3), and **disclose the substitution** in the response.
-3. Agent declares **nothing** → select by task class.
-4. Org policy blocks the selection → next row in the same task class → then `Auto`.
+1. **Valid supported pin**
+   - Preserve the target agent's declared model.
+   - Report `Resolution: Keep declared pin`.
+
+2. **Retiring but currently supported pin**
+   - Preserve it for the current execution if organization policy allows it.
+   - Report the retirement risk and recommend migration.
+
+3. **Retired, utility-only, malformed, unavailable, or blocked pin**
+   - Do not treat the invalid pin as executable.
+   - Resolve from the task-class defaults.
+   - Disclose the original pin, status, replacement, and reason.
+
+4. **No pin**
+   - Resolve from the task-class defaults.
+   - Recommend adding a reviewed pin for reproducibility.
+
+5. **Approval-gated model**
+   - Stop and request the named approval.
+   - Do not silently fall back unless policy explicitly permits it.
+
+6. **Resolved default unavailable**
+   - Use the fallback in the same task class.
+   - If unavailable, use `Auto` and disclose the fallback.
 
 ---
 
 ## 3. Task-class defaults
 
+Task-class defaults are fallbacks for missing or invalid pins. They do not silently replace a valid supported pin.
+
 | Task class | Default | Fallback | Rationale |
 |---|---|---|---|
-| Orchestration, multi-agent planning, arbitration | `Claude Sonnet 5` | `Claude Opus 5` | Use Sonnet for routine routing; escalate to Opus for high-consequence arbitration, irreconcilable constraints, or extended-context work |
-| Architecture, ADRs, threat modelling, hard debugging | `Claude Opus 5` | `Claude Opus 4.8` | High consequence, low volume — justify the premium |
-| Day-to-day coding, refactor, review, agentic edits | `Claude Sonnet 5` | `GPT-5.4` | Best quality-per-credit for the bulk of the work |
-| Autonomous multi-file implementation runs | `GPT-5.3-Codex` | `Claude Sonnet 5` | Purpose-built for long coding sessions |
-| Large-codebase survey / migration analysis | `Claude Opus 5` (1M context) | `GPT-5.6 Terra` | Extended context is a requirement, not a preference |
-| Tests, docs, changelogs, boilerplate | `GPT-5 mini` | `Claude Haiku 4.5` | High volume, low judgement — protect the budget |
-| Fast interactive Q&A, terminal help | `Claude Haiku 4.5` | `GPT-5.4 mini` | Latency over depth |
-| Unclassifiable / mixed | `Auto` | — | Note the choice in the report |
+| Orchestration and routine multi-agent planning | `Claude Sonnet 5` | `Claude Opus 5` | Balanced quality, latency, and cost |
+| Critical arbitration or high-consequence architecture | `Claude Opus 5` | `Claude Opus 4.8` | Premium reasoning for high-impact decisions |
+| Day-to-day coding, refactor, and review | `Claude Sonnet 5` | `GPT-5.4` | Strong quality-per-cost |
+| Autonomous multi-file implementation | `GPT-5.3-Codex` | `Claude Sonnet 5` | Long implementation runs |
+| Large-codebase survey or migration analysis | `Claude Opus 5` | `GPT-5.6 Terra` | Extended-context requirement |
+| Tests and QA | `GPT-5 mini` | `Claude Haiku 4.5` | High-volume, lower-judgment work |
+| Documentation, changelogs, and boilerplate | `GPT-5 mini` | `Claude Haiku 4.5` | Cost-efficient structured generation |
+| Fast interactive Q&A and terminal help | `Claude Haiku 4.5` | `GPT-5.4 mini` | Latency first |
+| Unclassifiable or mixed | `Auto` | N/A | Platform selection with disclosure |
 
-**Extended capability guidance:** the 1M-token context window and configurable reasoning levels both
-increase credit consumption. Use standard context and standard reasoning by default; escalate only
-for genuinely large or genuinely hard tasks, and say why.
+Premium escalation requires at least one documented reason:
+
+- High consequence of error
+- Deep multi-step reasoning
+- Conflicting cross-domain constraints
+- Regulated security or architecture decision
+- Extended context requirement
+- Observed lower-cost-model failure
+- Explicit user request after cost disclosure
 
 ---
 
-## 4. Model status reference (as verified 2026-08-17)
+## 4. Cost optimization
 
-### Currently GA and safe to pin
+Cost optimization is a recommendation layer, not permission to silently override a valid supported agent pin.
 
-`Claude Opus 5` · `Claude Sonnet 5` · `Claude Opus 4.7` · `Claude Opus 4.8` · `Claude Haiku 4.5` ·
-`GPT-5.5` · `GPT-5.6 Luna` · `GPT-5.6 Sol` · `GPT-5.6 Terra` · `GPT-5.4` · `GPT-5.4 mini` ·
-`GPT-5 mini` · `GPT-5.3-Codex` · `Gemini 3.5 Flash` · `Gemini 3.6 Flash` · `Gemini 3.7 Flash` ·
-`MAI-Code-1-Flash` · `MAI-Code-1.1-Flash` · `Grok 4.5` · `Grok 4.6`
+For each decision report:
 
-### Approval-gated
+- Declared Model
+- Model Status
+- Resolved Model
+- Resolution Reason
+- Lower-cost recommendation, if applicable
+- Upgrade condition, if applicable
+- Runtime Verification
 
-| Model | Constraint |
+If a valid pin is unnecessarily expensive for the agent's stable workload, recommend a reviewed frontmatter change for future executions.
+
+---
+
+## 5. Runtime verification
+
+Valid runtime evidence must come from a platform-controlled event, log, footer, or telemetry API that explicitly identifies the model for that specialist invocation.
+
+The following are not proof:
+
+- Parent model picker
+- Parent response footer
+- Agent self-report
+- Hardcoded `DECLARED_MODEL=` text
+- Writing-style differences
+- Orchestrator inference
+
+When telemetry is unavailable, write:
+
+`Runtime verification: Not exposed by runSubagent telemetry.`
+
+Do not state that the runtime ignored or used a pin without evidence.
+
+---
+
+## 6. Model status reference
+
+The exact model list and dates must be verified against the official supported-model source before publication or automated remediation.
+
+Maintain these categories in the audit script and this policy together:
+
+- Supported and approved
+- Approval-gated
+- Retiring
+- Retired
+- Utility-only
+- Organization-blocked
+- Unavailable
+
+Do not preserve stale counts or dates as permanent policy text. Store current audit counts in `registry/MODEL_AUDIT.md`.
+
+### Known remediation mappings from the current suite audit
+
+| Invalid or legacy pin | Resolution guidance |
 |---|---|
-| `Claude Fable 5` | Distinct data-retention posture; not eligible for default enablement; enterprise must explicitly enable |
-| `Kimi K2.7 Code`, `Kimi K3` | Open weight; not eligible for default enablement |
-| Evaluation models (codenamed) | May underperform on security prompts; may change or vanish without notice |
+| `GPT-4.1` | Resolve by task class |
+| `GPT-5` | Resolve by task class |
+| `Claude Sonnet 4` | `Claude Sonnet 5` or task-class default |
+| `Claude Sonnet 4.5` / `4.6` | Migrate to `Claude Sonnet 5` before retirement |
+| `GPT-5.1-Codex` family | `GPT-5.3-Codex` |
+| `GPT-4o` / `GPT-4o mini` when utility-only | Resolve by task class |
+| Malformed YAML value | Replace with one supported scalar string |
+| Missing pin | Task-class default, then reviewed frontmatter update |
 
-### Retiring **2026-09-01** — migrate now
-
-| Retiring | Replace with |
-|---|---|
-| `Claude Sonnet 4.5` | `Claude Sonnet 5` |
-| `Claude Sonnet 4.6` | `Claude Sonnet 5` |
-| `Claude Opus 4.5` | `Claude Opus 5` |
-| `Claude Opus 4.6` | `Claude Opus 5` |
-| `Gemini 3.1 Pro` | `Gemini 3.6 Flash` |
-| `Raptor mini` | `MAI-Code-1-Flash` |
-
-### Already retired — any pin to these is dead
-
-| Retired model | Date | Replace with |
-|---|---|---|
-| `GPT-4.1` | 2026-06-01 | `GPT-5.5` |
-| `GPT-5.2`, `GPT-5.2-Codex` | 2026-06-01 | `GPT-5.5` / `GPT-5.3-Codex` |
-| `Grok Code Fast 1` | 2026-05-15 | `GPT-5 mini` |
-| `Claude Sonnet 4` | 2026-05-01 | `Claude Sonnet 5` |
-| `GPT-5.1` | 2026-04-15 | `GPT-5.3-Codex` |
-| `GPT-5.1-Codex` / `-Max` / `-Mini` | 2026-04-01 | `GPT-5.3-Codex` |
-| `Gemini 3 Pro` | 2026-03-26 | `Gemini 3.6 Flash` |
-| `GPT-5`, `GPT-5-Codex`, `Claude Opus 4.1` | 2026-02-17 | `GPT-5.5` / `GPT-5.3-Codex` / `Claude Opus 5` |
-| `Claude Sonnet 3.5` | 2025-11-06 | `Claude Haiku 4.5` |
-| `Claude Opus 4`, `Claude Sonnet 3.7 (+Thinking)`, `Gemini 2.0 Flash`, `o1-mini`, `o3`, `o3-mini`, `o4-mini` | 2025-10-23 | See successor column in GitHub docs |
-| `Gemini 2.5 Pro`, `Gemini 3 Flash` | 2026-07-31 | `Gemini 3.6 Flash` |
-
-### Utility-only — never pin
-
-`GPT-4o` · `GPT-4o mini` · `GPT-4.1` · `GPT-5.4 nano` — these power background features and are not
-selectable in the model picker.
+Revalidate mappings before applying them.
 
 ---
 
-## 5. Remediation mapping for this suite
+## 7. YAML validity
 
-Apply with `python scripts/model_audit.py --fix` (writes proposed frontmatter changes; review the
-diff before committing).
+Valid:
 
-| Current pin in suite | Files | Status | Action |
-|---|---:|---|---|
-| `GPT-4.1` (all casings/quotings) | 30 | Retired 2026-06-01 | → task-class default; mostly specialist coding agents → `Claude Sonnet 5` |
-| `GPT-5` / `gpt-5` | 18 | Retired 2026-02-17 | → `GPT-5.5`, or `Claude Sonnet 5` for coding agents |
-| `Claude Sonnet 4.5` variants | 10 | **Retires 2026-09-01** | → `Claude Sonnet 5` — do these first |
-| `Claude Sonnet 4.6` variants | 7 | **Retires 2026-09-01** | → `Claude Sonnet 5` — do these first |
-| `Claude Sonnet 4` / `claude-sonnet-4` | 4 | Retired 2026-05-01 | → `Claude Sonnet 5` |
-| `claude-3.5-sonnet` | 4 | Retired 2025-11-06 | → `Claude Haiku 4.5` (all four are Salesforce agents; volume work) |
-| `gpt-4o`, `gpt-4` | 2 | Utility-only | → task-class default (utility pins are never selectable) |
-| Malformed (list literal, `- GPT-4.1`, pipe-delimited ×2) | 4 | Invalid YAML scalar | → single valid string per task class |
-| No pin | 142 | Undefined | → add pin per task class, prioritising T1 sub-orchestrators and high-traffic agents |
+```yaml
+model: Claude Sonnet 5
+```
 
-**Unpinned agents by proposed task class:** coding 60 · tests 23 · architecture 21 ·
-orchestration 12 · docs 10 · codex-autonomy 10 · fast-interactive 6.
+Valid:
 
-**Sequencing recommendation:** fix the 17 files retiring 2026-09-01 first (hard deadline), then the
-58 retired pins, then the 142 unpinned agents in traffic order. Do not attempt all 225 in one PR.
+```yaml
+model: "Claude Sonnet 5"
+```
+
+Invalid:
+
+```yaml
+model:
+  - Claude Sonnet 5
+```
+
+Invalid:
+
+```yaml
+model: Claude Sonnet 5 | GPT-5.4
+```
+
+The value must be one scalar string containing one model name.
 
 ---
 
-## 6. Verification procedure
+## 8. Audit and remediation
 
-1. Run `python scripts/model_audit.py --report`.
-2. Compare the model lists in Section 4 against the live GitHub supported-models page.
-3. Update Section 4 and the `RETIRED` / `SUNSET` sets inside `scripts/model_audit.py` together —
-   they must not diverge.
-4. Record the verification date at the top of this file.
-5. If a model in Section 3 has been retired, replace it in the task-class table **before** the
-   retirement date, not after.
+Report only:
+
+```bash
+python scripts/model_audit.py --report
+```
+
+Propose fixes:
+
+```bash
+python scripts/model_audit.py --fix
+```
+
+`--fix` must not commit, push, merge, or bypass review.
+
+Recommended sequence:
+
+1. Malformed values
+2. Retired pins
+3. Imminently retiring pins
+4. Utility-only or blocked pins
+5. High-traffic unpinned agents
+6. Remaining unpinned agents in reviewed batches
+
+Record changes in the registry with old model, status, task class, new model, reason, reviewer, and date.
+
+---
+
+## 9. Verification tests
+
+Validate at least:
+
+1. Valid pinned agent retains the pin.
+2. Retired pin resolves by task class and discloses substitution.
+3. Unpinned coding agent resolves to coding default.
+4. Unpinned architecture agent resolves to architecture default.
+5. Approval-gated model stops for approval.
+6. Parent `Auto` mode is not reported as specialist runtime evidence.
+7. Runtime telemetry limitation is explicitly reported.

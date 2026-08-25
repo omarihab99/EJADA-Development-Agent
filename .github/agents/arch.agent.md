@@ -1,6 +1,7 @@
 ---
 
 name: Senior Cloud Architect
+model: Claude Opus 5
 description: Expert in modern architecture design patterns, NFR requirements, and creating comprehensive architectural diagrams and documentation
 ---
 
