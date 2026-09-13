@@ -1,141 +1,93 @@
 # Response Contract and Validation Output
 
-> **Version 1.1 · Effective 2026-08-24 · Owner: ECC AI CoE**
-
----
+**Version 1.2 · Effective 2026-09-09 · Owner: ECC AI CoE**
 
 ## 1. Purpose
 
-This document defines how the Universal Orchestrator presents routing, approval, execution, artifacts, validation, and final results.
-
-It does not select agents or models.
-
-- Agent selection rules: `AGENT_GOVERNANCE.md` and the Universal Orchestrator
-- Agent identity source: `registry/AGENT_REGISTRY.csv`
-- Model resolution: `MODEL_POLICY.md`
-
----
+This document defines proportionate response formats. It does not select agents or models.
 
 ## 2. Response tiers
 
-| Tier | Use when | Required sections |
-|---|---|---|
-| Compact | Trivial, advisory, no artifact change | Sections 1-2 |
-| Standard | Moderate request, artifact change, or follow-up work | Sections 1-5 |
-| Full | Multi-agent, governance, regulated, production, or multi-stakeholder work | Sections 1-6 |
+### Compact
+Use for general Q&A, explanations, navigation, and read-only Fast Path work.
 
-The selected tier must appear in the routing or approval output. Required but unused sections are marked `N/A`.
+Output:
+- The answer only.
+- Add a short limitation or validation note only when necessary.
 
----
+Do not include routing, model, runtime, cost, approval, artifact, handoff, or tracker sections.
 
-## 3. Pre-execution approval output
+### Standard
+Use for routine code or artifact changes and single-specialist execution.
 
-Before any specialist delegation, emit:
+Output:
+1. Result.
+2. Changed files.
+3. Validation performed and outcome.
+4. Remaining assumptions, risks, or next action only when applicable.
+
+Do not add empty `N/A` sections.
+
+### Full
+Use for multi-agent, governance, regulated, production, high-risk, or multi-stakeholder work.
+
+Output:
+1. Routing and agents actually invoked.
+2. Integrated result.
+3. Model substitutions or runtime limitations, when relevant.
+4. Artifacts changed.
+5. Validation evidence.
+6. Approval evidence for high-risk actions.
+7. Open risks, blockers, and next actions.
+
+## 3. Routing output
+
+For routine single-specialist execution, emit one concise line before execution:
+
+`🤖 Agent: <exact verified agent name> | Reason: <one short clause>`
+
+Use the detailed routing block only for Full-tier execution:
 
 ```text
-==================================================
-EXECUTION APPROVAL REQUIRED
-Execution has NOT started.
+Routing Decision
+- Proposed Agent:
+- Task:
+- Routing Reason:
+- Execution Wave:
+- Model Decision, only when material:
+- Governance Status:
+```
 
-Selected Agents:
-- <exact agent name: task>
+Never claim an agent was invoked unless the corresponding tool call occurred.
 
-Execution Waves:
-- Wave <n>: <agents and dependency>
+## 4. Approval output
 
-Model Decisions:
-- Declared Model: <value or Not declared>
-- Model Status: <status>
-- Resolved Model: <value>
-- Resolution Reason: <reason>
-- Runtime Verification: <verified source or not exposed>
+Do not emit approval output before ordinary specialist delegation or reversible local changes.
 
-Governance Validation:
-<PASSED | CONDITIONAL | FAILED>
+For a high-risk action, emit:
 
+```text
+HIGH-RISK ACTION APPROVAL REQUIRED
+Execution has stopped before the risky action.
+Action:
+Target environment or resource:
+Expected impact:
 Assumptions:
-<list or NONE>
-
-Response Contract Tier:
-<Compact | Standard | Full>
-
-Type APPROVE, CONTINUE, EXECUTE, or APPROVE WITH ASSUMPTIONS to begin.
-Type MODIFY to revise the plan.
-Type REJECT to cancel.
-==================================================
+Rollback approach:
+Type APPROVE to execute this exact action, MODIFY to revise it, or REJECT to cancel it.
 ```
 
-After this block, stop. Do not include specialist briefs or specialist output before approval.
+Approval applies only to the exact named action. A plan approval does not authorize another irreversible action.
 
----
+## 5. Artifact and validation reporting
 
-## 4. Routing Decision Output
+List only files created, modified, moved, or deleted. Files merely read are not artifacts.
 
-For each proposed specialist:
+Validation claims must include the command or check performed and its observable outcome. Never report a test as passed if it was not executed.
 
-```text
-🤖 Agent: Universal Orchestrator
+## 6. Handoff prompt
 
-### Routing Decision
-
-- Proposed Agent: <exact verified name>
-- Complexity: <Low | Medium | High | Critical>
-- Required Capability: <Fast Lookup | Balanced Reasoning | Deep Reasoning | Extended Context>
-- Agent Role: <one sentence>
-- Task Class: <class>
-- Declared Model: <pin or Not declared>
-- Model Status: <status>
-- Resolved Model: <policy result>
-- Resolution Reason: <keep pin, task-class fallback, approval required, or Auto>
-- Runtime Verification: <verified source or not exposed>
-- Cost Recommendation: <recommendation or N/A>
-- Routing Reason: <why selected>
-- Alternatives Considered:
-  - <verified alternative or N/A>
-- Execution Wave: <number>
-- Response Contract Tier: <tier>
-```
-
-This block is a proposed execution plan until approval is received. It must not claim that the agent has already executed.
-
----
-
-## 5. Direct Handling Output
-
-```text
-🤖 Agent: Universal Orchestrator
-
-### Direct Handling Decision
-
-- Complexity: Low
-- Routing Considered: Yes
-- Agents Evaluated:
-  - <candidate or N/A>
-- Handling Mode: Direct
-- Parent Declared Model: <value>
-- Suggested Lower-cost Model: <value or N/A>
-- Runtime Verification: <verified source or not exposed>
-- Direct Handling Reason: <why no override trigger applies>
-- Response Contract Tier: Compact
-```
-
-Direct handling is not allowed for architecture, cloud, security, data architecture, production, regulated, governance, or irreversible-action work.
-
----
-
-## 6. Final Response Contract
-
-### 1. Assigned Agent
-
-State exact agents invoked and why. Distinguish proposed agents from agents actually invoked. Disclose model substitutions and runtime-verification limits.
-
-### 2. On-the-spot Answer
-
-Lead with the integrated result. Include verification evidence and limitations. Do not claim success without executed evidence.
-
-### 3. Handoff Prompt
-
-When follow-up work remains, provide a self-contained brief:
+Include a handoff only when work genuinely continues with another person or agent:
 
 ```text
 CONTEXT:
@@ -146,84 +98,34 @@ ACCEPTANCE:
 RETURN FORMAT:
 ```
 
-Otherwise write `N/A`.
-
-### 4. Artifact Pack
-
-| Artifact | Path | Status | Evidence or notes |
-|---|---|---|---|
-
-List only files created or changed. Files merely read do not belong here.
-
-### 5. Next Actions
-
-1. `<action>` — Owner: `<role or person>` — Date: `<explicit date or N/A when no date exists>`
-
-Do not invent dates or owners.
-
-### 6. Tracker Update
-
-| Completed | Open | Owner | Evidence/Artifact | Risk/Blocker | Ask | Next Step |
-|---|---|---|---|---|---|---|
-
----
+Do not generate a handoff for a completed task.
 
 ## 7. Validation framework
 
-Use when evaluating an idea, use case, agent, reusable asset, or pilot.
+Use only when evaluating an idea, use case, agent, reusable asset, or pilot.
 
-Score each dimension:
+Dimensions:
+- AI Fit.
+- Business Value.
+- Feasibility.
+- Data Readiness.
+- Governance.
+- Reuse Potential.
+- Pilot Readiness.
 
-- Strong
-- Adequate
-- Weak
-- Unknown
+Allowed decisions:
+- Accepted Idea.
+- More Elaboration Needed.
+- Not Accepted Idea.
 
 Unknown is preferred over guessing.
 
-| Dimension | Validation question |
-|---|---|
-| AI Fit | Is AI materially useful, or is classic automation sufficient? |
-| Business Value | What measurable or observable value is expected? |
-| Feasibility | Are tools, data, owners, SMEs, and processes available? |
-| Data Readiness | Do accessible examples, templates, code, logs, or documents exist? |
-| Governance | Are access, privacy, review, audit, and approval paths clear? |
-| Reuse Potential | Can the result become a reusable agent, workflow, prompt, or asset? |
-| Pilot Readiness | Is the item ready, blocked, or unsuitable? |
+## 8. Anti-patterns
 
-Use exactly one decision:
-
-- Accepted Idea
-- More Elaboration Needed
-- Not Accepted Idea
-
-Do not invent a fourth decision.
-
----
-
-## 8. Default validation output
-
-| Column | Rule |
-|---|---|
-| Validation Feedback | Exactly one approved decision |
-| Validation Detail | One or two item-specific sentences |
-| Validation Notes | Caveats, dependencies, and conditions |
-| Reality / Doability | Practical assessment and binding constraint |
-| Suggestion for How to Apply | First concrete implementation step |
-| Missing Inputs | Named inputs or `None` |
-| Recommended AI Approach | Agent, RAG, prompt pack, fine-tune, automation, or none |
-| Owner / SME Follow-up | Named role and required response, or input needed |
-| Pilot Readiness | Ready, needs elaboration, or not ready with gating item |
-| Governance Notes | Review point, sensitivity, access, and audit requirement |
-
----
-
-## 9. Anti-patterns
-
-- Claiming delegation before `runSubagent` execution
-- Showing specialist output before approval
-- Reporting the parent model as the specialist runtime model
-- Hiding model substitution
-- Inventing owners, dates, files, test results, or metrics
-- Listing read-only files as changed artifacts
-- Repeating the substantive answer across all sections
+- Full reporting for a simple question.
+- Approval before routine delegation.
+- Claiming delegation before execution.
+- Reporting the parent model as specialist runtime evidence.
+- Inventing files, owners, dates, metrics, tests, or progress.
+- Repeating the answer across multiple sections.
+- Listing files that were only read as changed artifacts.

@@ -1,226 +1,108 @@
 # GitHub Copilot Model Policy - Development Agent Suite
 
-> **Version 1.1 · Last reviewed 2026-08-24 · Owner: ECC AI CoE**
->
-> Re-verify supported models, retirement status, organization availability, and approval requirements monthly and before release.
+**Version 1.2 · Last reviewed 2026-09-09 · Owner: ECC AI CoE**
 
-## 1. Decision principle
+## 1. Loading policy
 
-## 1. Purpose
+Do not load this file during Fast Path execution.
+Consult it only when:
+- A specialist will be delegated.
+- A model pin is missing, invalid, unavailable, blocked, or approval-gated.
+- The user requests model selection, audit, or remediation.
+- A release or maintenance task requires model verification.
 
-This policy defines model validation and resolution for custom agents.
+Cache the resolved model decision for the current execution. Reload only if the target agent, organization availability, or policy changes.
 
-It distinguishes:
+## 2. Definitions
 
-- **Declared Model**: `model:` in the target agent frontmatter
-- **Model Status**: supported, retiring, retired, utility-only, malformed, unavailable, blocked, approval-gated, or not declared
-- **Resolved Model**: configured model retained or policy result recommended after validation
-- **Parent Session Model**: model displayed for the Universal Orchestrator session
-- **Observed Runtime Model**: actual specialist execution model only when platform telemetry explicitly exposes it
+- **Declared Model:** `model:` in the target agent frontmatter.
+- **Model Status:** supported, retiring, retired, utility-only, malformed, unavailable, blocked, approval-gated, or not declared.
+- **Resolved Model:** retained valid pin or task-class fallback.
+- **Parent Session Model:** model used by the Universal Orchestrator.
+- **Observed Runtime Model:** specialist model only when platform telemetry explicitly exposes it.
 
-The parent session model is not proof of the delegated specialist runtime model.
+The parent session model and an agent self-report are not proof of the specialist runtime model.
 
----
+## 3. Resolution order
 
-## 2. Resolution order
+1. Preserve a valid, supported, organization-allowed declared pin.
+2. Preserve a retiring but still supported pin for the current execution, and recommend migration.
+3. For retired, utility-only, malformed, unavailable, or blocked pins, use the task-class default.
+4. For no pin, use the task-class default and recommend reviewed pinning for high-traffic agents.
+5. For approval-gated models, request approval only when that model is genuinely required. Otherwise use an allowed fallback and disclose it.
+6. If the default is unavailable, use the fallback, then Auto.
 
-Apply in this order:
+Do not silently replace a valid pin only to reduce cost.
 
-1. **Valid supported pin**
-   - Preserve the target agent's declared model.
-   - Report `Resolution: Keep declared pin`.
+## 4. Task-class defaults
 
-2. **Retiring but currently supported pin**
-   - Preserve it for the current execution if organization policy allows it.
-   - Report the retirement risk and recommend migration.
+| Task class | Default | Fallback |
+|---|---|---|
+| Fast interactive Q&A and terminal help | Claude Haiku 4.5 | GPT-5.4 mini |
+| Documentation, changelog, boilerplate | GPT-5 mini | Claude Haiku 4.5 |
+| Tests and routine QA | GPT-5 mini | Claude Haiku 4.5 |
+| Day-to-day coding, refactor, review | Claude Sonnet 5 | GPT-5.4 |
+| Routine orchestration and multi-agent planning | Claude Sonnet 5 | GPT-5.4 |
+| Autonomous multi-file implementation | GPT-5.3-Codex | Claude Sonnet 5 |
+| Critical arbitration or high-consequence architecture | Claude Opus 5 | Claude Sonnet 5 |
+| Large-codebase survey requiring extended context | Approved extended-context model | Auto |
+| Unclassifiable or mixed | Auto | N/A |
 
-3. **Retired, utility-only, malformed, unavailable, or blocked pin**
-   - Do not treat the invalid pin as executable.
-   - Resolve from the task-class defaults.
-   - Disclose the original pin, status, replacement, and reason.
+Use standard context and normal reasoning by default. Increase context or reasoning only when the task requires it.
 
-4. **No pin**
-   - Resolve from the task-class defaults.
-   - Recommend adding a reviewed pin for reproducibility.
+## 5. Premium escalation
 
-5. **Approval-gated model**
-   - Stop and request the named approval.
-   - Do not silently fall back unless policy explicitly permits it.
+Premium escalation requires at least one recorded reason:
+- High consequence of error.
+- Conflicting cross-domain constraints.
+- Regulated security or architecture decision.
+- Extended-context requirement.
+- Observed lower-cost-model failure.
+- Explicit user request after cost disclosure.
 
-6. **Resolved default unavailable**
-   - Use the fallback in the same task class.
-   - If unavailable, use `Auto` and disclose the fallback.
+Routine repository routing is not, by itself, a reason for premium escalation.
 
----
+## 6. Runtime reporting
 
-## 3. Task-class defaults
+For routine execution, report model details only when a substitution, limitation, approval, or material cost decision occurred.
 
-Task-class defaults are fallbacks for missing or invalid pins. They do not silently replace a valid supported pin.
-
-| Task class | Default | Fallback | Rationale |
-|---|---|---|---|
-| Orchestration and routine multi-agent planning | `Claude Sonnet 5` | `Claude Opus 5` | Balanced quality, latency, and cost |
-| Critical arbitration or high-consequence architecture | `Claude Opus 5` | `Claude Opus 4.8` | Premium reasoning for high-impact decisions |
-| Day-to-day coding, refactor, and review | `Claude Sonnet 5` | `GPT-5.4` | Strong quality-per-cost |
-| Autonomous multi-file implementation | `GPT-5.3-Codex` | `Claude Sonnet 5` | Long implementation runs |
-| Large-codebase survey or migration analysis | `Claude Opus 5` | `GPT-5.6 Terra` | Extended-context requirement |
-| Tests and QA | `GPT-5 mini` | `Claude Haiku 4.5` | High-volume, lower-judgment work |
-| Documentation, changelogs, and boilerplate | `GPT-5 mini` | `Claude Haiku 4.5` | Cost-efficient structured generation |
-| Fast interactive Q&A and terminal help | `Claude Haiku 4.5` | `GPT-5.4 mini` | Latency first |
-| Unclassifiable or mixed | `Auto` | N/A | Platform selection with disclosure |
-
-Premium escalation requires at least one documented reason:
-
-- High consequence of error
-- Deep multi-step reasoning
-- Conflicting cross-domain constraints
-- Regulated security or architecture decision
-- Extended context requirement
-- Observed lower-cost-model failure
-- Explicit user request after cost disclosure
-
-## 4. Decision categories
-
-## 4. Cost optimization
-
-Cost optimization is a recommendation layer, not permission to silently override a valid supported agent pin.
-
-For each decision report:
-
-- Declared Model
-- Model Status
-- Resolved Model
-- Resolution Reason
-- Lower-cost recommendation, if applicable
-- Upgrade condition, if applicable
-- Runtime Verification
-
-If a valid pin is unnecessarily expensive for the agent's stable workload, recommend a reviewed frontmatter change for future executions.
-
----
-
-## 5. Runtime verification
-
-Valid runtime evidence must come from a platform-controlled event, log, footer, or telemetry API that explicitly identifies the model for that specialist invocation.
-
-The following are not proof:
-
-- Parent model picker
-- Parent response footer
-- Agent self-report
-- Hardcoded `DECLARED_MODEL=` text
-- Writing-style differences
-- Orchestrator inference
+For Full reporting, include:
+- Declared Model.
+- Model Status.
+- Resolved Model.
+- Resolution Reason.
+- Runtime Verification.
 
 When telemetry is unavailable, write:
 
 `Runtime verification: Not exposed by runSubagent telemetry.`
 
-Do not state that the runtime ignored or used a pin without evidence.
+## 7. Audit and remediation
 
----
+Model lists and retirement dates change. Verify against the official supported-model source before publication or automated remediation.
 
-## 6. Model status reference
-
-The exact model list and dates must be verified against the official supported-model source before publication or automated remediation.
-
-Maintain these categories in the audit script and this policy together:
-
-- Supported and approved
-- Approval-gated
-- Retiring
-- Retired
-- Utility-only
-- Organization-blocked
-- Unavailable
-
-Do not preserve stale counts or dates as permanent policy text. Store current audit counts in `registry/MODEL_AUDIT.md`.
-
-### Known remediation mappings from the current suite audit
-
-| Invalid or legacy pin | Resolution guidance |
-|---|---|
-| `GPT-4.1` | Resolve by task class |
-| `GPT-5` | Resolve by task class |
-| `Claude Sonnet 4` | `Claude Sonnet 5` or task-class default |
-| `Claude Sonnet 4.5` / `4.6` | Migrate to `Claude Sonnet 5` before retirement |
-| `GPT-5.1-Codex` family | `GPT-5.3-Codex` |
-| `GPT-4o` / `GPT-4o mini` when utility-only | Resolve by task class |
-| Malformed YAML value | Replace with one supported scalar string |
-| Missing pin | Task-class default, then reviewed frontmatter update |
-
-Revalidate mappings before applying them.
-
----
-
-## 7. YAML validity
-
-Valid:
-
-```yaml
-model: Claude Sonnet 5
-```
-
-Valid:
-
-```yaml
-model: "Claude Sonnet 5"
-```
-
-Invalid:
-
-```yaml
-model:
-  - Claude Sonnet 5
-```
-
-Invalid:
-
-```yaml
-model: Claude Sonnet 5 | GPT-5.4
-```
-
-The value must be one scalar string containing one model name.
-
----
-
-## 8. Audit and remediation
-
-Report only:
+Commands:
 
 ```bash
 python scripts/model_audit.py --report
-```
-
-Propose fixes:
-
-```bash
 python scripts/model_audit.py --fix
 ```
 
-`--fix` must not commit, push, merge, or bypass review.
+`--fix` must produce reviewable changes and must not commit, push, merge, or bypass review.
 
-Recommended sequence:
+Remediation sequence:
+1. Malformed values.
+2. Retired and utility-only pins.
+3. Imminently retiring pins.
+4. High-traffic unpinned T0/T1/T2 agents.
+5. Remaining unpinned agents in reviewed batches.
 
-1. Malformed values
-2. Retired pins
-3. Imminently retiring pins
-4. Utility-only or blocked pins
-5. High-traffic unpinned agents
-6. Remaining unpinned agents in reviewed batches
+## 8. Required tests
 
-Record changes in the registry with old model, status, task class, new model, reason, reviewer, and date.
-
----
-
-## 9. Verification tests
-
-Validate at least:
-
-1. Valid pinned agent retains the pin.
-2. Retired pin resolves by task class and discloses substitution.
-3. Unpinned coding agent resolves to coding default.
-4. Unpinned architecture agent resolves to architecture default.
-5. Approval-gated model stops for approval.
-6. Parent `Auto` mode is not reported as specialist runtime evidence.
-7. Runtime telemetry limitation is explicitly reported.
+Validate that:
+- Fast Path does not load model policy.
+- Valid pins are preserved.
+- Invalid and missing pins resolve by task class.
+- Parent model is not reported as specialist runtime evidence.
+- Approval-gated model handling follows organization policy.
+- Unavailable defaults use the documented fallback.
