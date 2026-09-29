@@ -5,5 +5,7 @@
   "chat.useAgentSkills": true,
   "chat.agentFilesLocations": {
     ".github/agents": true
-  }
+  },
+  "github.copilot.chat.otel.enabled": true,
+  "github.copilot.chat.otel.captureContent": true
 }
