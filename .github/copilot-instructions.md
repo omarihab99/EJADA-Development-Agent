@@ -1,6 +1,6 @@
 # Copilot Instructions - Development Agent Suite
 
-**Version 2.6 · Last reviewed 2026-09-09 · Owner: ECC AI CoE**
+**Version 2.7 · Last reviewed 2026-10-01 · Owner: ECC AI CoE**
 
 Keep this file concise because it is shared repository context. Detailed rules live in their dedicated governance files.
 
@@ -35,7 +35,11 @@ For general Q&A, explanation, navigation, or read-only low-risk work.
 For clear, single-domain repository work.
 - Use the repository index and focused discovery.
 - Verify one exact specialist.
-- Delegate once when specialist expertise materially improves the result.
+- Search the registry/index for the best matching specialist.
+- If a suitable specialist exists, delegation is mandatory.
+- Select the specialist before resolving its execution model.
+- Delegate once using a concise, self-contained brief.
+- If no suitable specialist exists, the Universal Orchestrator may execute directly as a documented fallback.
 - Execute routine reversible work without an approval round trip.
 - Use targeted validation and Standard response.
 

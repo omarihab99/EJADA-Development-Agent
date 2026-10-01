@@ -1,6 +1,6 @@
 # GitHub Copilot Model Policy - Development Agent Suite
 
-**Version 1.2 · Last reviewed 2026-09-09 · Owner: ECC AI CoE**
+**Version 1.3 · Last reviewed 2026-10-01 · Owner: ECC AI CoE**
 
 ## 1. Loading policy
 
@@ -32,7 +32,7 @@ The parent session model and an agent self-report are not proof of the specialis
 5. For approval-gated models, request approval only when that model is genuinely required. Otherwise use an allowed fallback and disclose it.
 6. If the default is unavailable, use the fallback, then Auto.
 
-Do not silently replace a valid pin only to reduce cost.
+Do not replace a valid pin only to reduce cost. A valid pin may be replaced when benchmark evidence shows it is below the required quality threshold, when validation fails, or when policy/availability makes it ineligible. Disclose the reason.
 
 ## 4. Task-class defaults
 
@@ -51,6 +51,17 @@ Do not silently replace a valid pin only to reduce cost.
 Use standard context and normal reasoning by default. Increase context or reasoning only when the task requires it.
 
 ## 5. Premium escalation
+
+Use governance/MODEL_BENCHMARKS.csv when current evidence exists for the selected agent/task class.
+
+Qualification algorithm:
+- Remove unavailable, retired, blocked, malformed, utility-only, or disallowed models.
+- Remove models below the task's required quality threshold.
+- Prefer the qualified model with the lowest expected credits.
+- If credit evidence is equal or unavailable, prefer lower expected tokens.
+- Use higher measured accuracy as the next tie-breaker.
+- If no benchmark qualifies, use the task-class default and validate.
+- On validation failure, refine once when the failure is safely correctable; otherwise escalate to the next qualified model.
 
 Premium escalation requires at least one recorded reason:
 - High consequence of error.
@@ -106,3 +117,7 @@ Validate that:
 - Parent model is not reported as specialist runtime evidence.
 - Approval-gated model handling follows organization policy.
 - Unavailable defaults use the documented fallback.
+- Agent selection always precedes model selection.
+- Benchmark qualification rejects models below the required threshold.
+- Cost optimization never bypasses the quality threshold.
+- Validation failure triggers controlled refinement or escalation.

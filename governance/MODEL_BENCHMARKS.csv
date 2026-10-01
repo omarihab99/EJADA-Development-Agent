@@ -1,0 +1,6 @@
+benchmark_id,agent,task_class,model,accuracy_percent,tokens,credits,convention_result,validation_status,evidence_date,notes
+BM-001,,data-model-migration,GPT-5.6 Luna,60,103000,7,failed,tested,2026-10-01,"Wrong column name; incorrect required fields; incorrect/missing indexes"
+BM-002,,data-model-migration,Claude Sonnet 5,99,158900,126,passed,tested,2026-10-01,"Correct names, configurations, indexes, and shared constants"
+BM-003,,simple-background-job,GPT-6 Luna,90,,2,failed,tested,2026-10-01,"Correct requirement; two DB queries; project conventions not followed"
+BM-004,,simple-background-job,GPT-6 Luna refined,,103400,5,,tested,2026-10-01,"Total after additional 3-credit refinement; final accuracy not provided"
+BM-005,,simple-background-job,Claude Sonnet 5,100,139600,99,passed,tested,2026-10-01,"One DB query and project conventions followed"

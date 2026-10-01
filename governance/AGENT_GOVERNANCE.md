@@ -1,6 +1,6 @@
 # Agent Suite Governance Framework
 
-**Version 1.2 · Effective 2026-09-09 · Owner: ECC AI CoE - AI Adoption & Agents**
+**Version 1.3 · Effective 2026-10-01 · Owner: ECC AI CoE - AI Adoption & Agents**
 
 ## 1. Purpose
 
