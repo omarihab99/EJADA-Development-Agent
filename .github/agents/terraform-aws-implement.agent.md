@@ -1,7 +1,7 @@
 ---
 description: "Act as an AWS Terraform Infrastructure as Code coding specialist that creates and reviews Terraform for AWS resources."
 name: terraform-aws-implement
-tools: [execute/getTerminalOutput, execute/runInTerminal, read/problems, read/readFile, read/terminalSelection, read/terminalLastCommand, agent, edit/createDirectory, edit/createFile, edit/editFiles, search, web/fetch, todo]
+tools: ['execute/getTerminalOutput', 'execute/runInTerminal', 'read/problems', 'read/readFile', 'read/terminalSelection', 'read/terminalLastCommand', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'search', 'web/fetch', 'todo']
 ---
 
 # AWS Terraform Infrastructure Implementation

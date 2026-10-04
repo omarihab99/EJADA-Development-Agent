@@ -1,6 +1,6 @@
 ---
 name: 'Declarative Agents Architect'
-model: GPT-4.1
+description: 'Microsoft 365 Copilot declarative agent architect: designs and builds declarative agents (JSON schema v1.5, TypeSpec, Microsoft 365 Agents Toolkit).'
 tools: ['codebase']
 ---
 

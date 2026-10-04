@@ -100,13 +100,15 @@ ALIASES = {
 # Matched against the FILENAME first (a strong, stable signal), then the description as fallback.
 # Order matters — the first match wins. Proposals are advisory: always review --fix output.
 TASK_CLASSES = [
-    ("orchestration",    r"orchestrat|umbrella|commander|coordinator|router",      "Claude Opus 5"),
+    # Policy alignment (MODEL_POLICY.md §4/§5): routine orchestration and architecture default to the
+    # day-to-day coding model. Opus-class is a premium escalation that needs a recorded reason.
+    ("orchestration",    r"orchestrat|umbrella|commander|coordinator|router",      "Claude Sonnet 5"),
     ("tests",            r"test|\bqa\b|playwright|\btdd\b|coverage|diffblue|a11y|accessib",
                                                                                   "GPT-5 mini"),
     ("docs-boilerplate", r"writer|\bdocs?\b|documentation|readme|changelog|tour|markdown|content",
                                                                                   "GPT-5 mini"),
     ("architecture",     r"architect|\badr\b|blueprint|threat|security|governance|principal|sentinel|policy",
-                                                                                  "Claude Opus 5"),
+                                                                                  "Claude Sonnet 5"),
     ("codex-autonomy",   r"scaffold|generator|foundry|migration|moderniz|upgrade|implementer|exporter",
                                                                                   "GPT-5.3-Codex"),
     ("fast-interactive", r"terminal|helper|cheat|mentor|study|prep|lookup",        "Claude Haiku 4.5"),
@@ -145,6 +147,8 @@ def classify(raw: str) -> tuple[str, str]:
     if v in UTILITY_ONLY:
         return "UTILITY-ONLY", "utility model — not selectable in the picker"
     if v in SUNSET:
+        if dt.date.today().isoformat() >= SUNSET_DATE:       # sunset date has passed -> treat as retired
+            return "RETIRED", f"retired {SUNSET_DATE} → use {SUNSET[v]}"
         return "SUNSET", f"retires {SUNSET_DATE} → use {SUNSET[v]}"
     if v in APPROVAL_GATED:
         return "APPROVAL-GATED", APPROVAL_GATED[v]

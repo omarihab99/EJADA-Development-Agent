@@ -2,7 +2,7 @@
 name: 'SE: Security'
 description: 'Security-focused code review specialist with OWASP Top 10, Zero Trust, LLM security, and enterprise security standards'
 model: Claude Opus 5
-Show more linestools: ['codebase', 'edit/editFiles', 'search', 'problems']
+tools: ['codebase', 'edit/editFiles', 'search', 'problems']
 ---
 
 # Security Reviewer

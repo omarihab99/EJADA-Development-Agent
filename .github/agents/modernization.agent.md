@@ -7,7 +7,6 @@ tools:
    - read
    - edit
    - execute
-   - agent
    - todo
    - read/problems
    - execute/runTask

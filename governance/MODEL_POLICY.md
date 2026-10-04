@@ -1,123 +1,85 @@
-# GitHub Copilot Model Policy - Development Agent Suite
+## GitHub Copilot Model Policy - Development Agent Suite
 
-**Version 1.3 · Last reviewed 2026-10-01 · Owner: ECC AI CoE**
+**Version 1.5 · Last reviewed 2026-10-04 · Owner: ECC AI CoE**
 
-## 1. Loading policy
+### 1. Lazy loading
+Do not load this policy for Fast Path. Do not load it merely because a specialist is delegated when the specialist already has a valid, supported, allowed pin and no model analysis is requested.
 
-Do not load this file during Fast Path execution.
 Consult it only when:
-- A specialist will be delegated.
-- A model pin is missing, invalid, unavailable, blocked, or approval-gated.
-- The user requests model selection, audit, or remediation.
-- A release or maintenance task requires model verification.
+- selected specialist has no valid supported allowed pin;
+- the pin is retiring/retired/utility-only/malformed/unavailable/blocked/approval-gated;
+- validation justifies escalation;
+- user requests model selection/audit/remediation;
+- release/maintenance requires verification.
 
-Cache the resolved model decision for the current execution. Reload only if the target agent, organization availability, or policy changes.
+Cache the decision for the current execution; reload only when agent, availability, or policy changes.
 
-## 2. Definitions
+### 2. Runtime truth
+- Declared Model: target agent frontmatter `model:`.
+- Resolved Model: retained valid pin or policy fallback.
+- Parent Session Model: orchestrator model.
+- Observed Runtime Model: only telemetry explicitly exposed by the platform.
 
-- **Declared Model:** `model:` in the target agent frontmatter.
-- **Model Status:** supported, retiring, retired, utility-only, malformed, unavailable, blocked, approval-gated, or not declared.
-- **Resolved Model:** retained valid pin or task-class fallback.
-- **Parent Session Model:** model used by the Universal Orchestrator.
-- **Observed Runtime Model:** specialist model only when platform telemetry explicitly exposes it.
+Parent/UI selection and agent self-report are not proof of specialist runtime model. Static body text does not change runtime model selection.
 
-The parent session model and an agent self-report are not proof of the specialist runtime model.
+### 3. Resolution order
+1. Preserve valid supported organization-allowed declared pin.
+2. For retiring-but-supported pin, preserve for current execution and flag maintenance separately, not in routine user output unless relevant.
+3. For invalid/unavailable/retired/utility-only/blocked/no pin, choose task-class default.
+4. If default unavailable, choose fallback, then Auto.
+5. Approval-gated model: use an allowed qualified fallback unless the gated model is genuinely required.
+6. Validation failure: refine once when safely correctable, otherwise escalate to next qualified model.
 
-## 3. Resolution order
+Do not replace a valid pin solely for cost. Do not use premium models for routine routing.
 
-1. Preserve a valid, supported, organization-allowed declared pin.
-2. Preserve a retiring but still supported pin for the current execution, and recommend migration.
-3. For retired, utility-only, malformed, unavailable, or blocked pins, use the task-class default.
-4. For no pin, use the task-class default and recommend reviewed pinning for high-traffic agents.
-5. For approval-gated models, request approval only when that model is genuinely required. Otherwise use an allowed fallback and disclose it.
-6. If the default is unavailable, use the fallback, then Auto.
+### 4. Task-class defaults
+- Fast interactive Q&A / terminal help: Claude Haiku 4.5; fallback GPT-5.4 mini.
+- Documentation / changelog / boilerplate: GPT-5 mini; fallback Claude Haiku 4.5.
+- Tests / routine QA: GPT-5 mini; fallback Claude Haiku 4.5.
+- Day-to-day coding / refactor / review: Claude Sonnet 5; fallback GPT-5.4.
+- Routine orchestration / multi-agent planning: Claude Sonnet 5; fallback GPT-5.4.
+- Autonomous multi-file implementation: GPT-5.3-Codex; fallback Claude Sonnet 5.
+- Critical arbitration / high-consequence architecture: Claude Opus 5; fallback Claude Sonnet 5.
+- Large-codebase survey requiring extended context: approved extended-context model; fallback Auto.
+- Unclassifiable/mixed: Auto.
 
-Do not replace a valid pin only to reduce cost. A valid pin may be replaced when benchmark evidence shows it is below the required quality threshold, when validation fails, or when policy/availability makes it ineligible. Disclose the reason.
+Use standard context/reasoning by default; increase only when task evidence requires it.
 
-## 4. Task-class defaults
+### 5. Benchmark use
+Read `MODEL_BENCHMARKS.csv` only when a model decision benefits from benchmark evidence. A benchmark governs selection only when it identifies a matching agent or benchmark key and task class. Rows without that match are informational.
 
-| Task class | Default | Fallback |
-|---|---|---|
-| Fast interactive Q&A and terminal help | Claude Haiku 4.5 | GPT-5.4 mini |
-| Documentation, changelog, boilerplate | GPT-5 mini | Claude Haiku 4.5 |
-| Tests and routine QA | GPT-5 mini | Claude Haiku 4.5 |
-| Day-to-day coding, refactor, review | Claude Sonnet 5 | GPT-5.4 |
-| Routine orchestration and multi-agent planning | Claude Sonnet 5 | GPT-5.4 |
-| Autonomous multi-file implementation | GPT-5.3-Codex | Claude Sonnet 5 |
-| Critical arbitration or high-consequence architecture | Claude Opus 5 | Claude Sonnet 5 |
-| Large-codebase survey requiring extended context | Approved extended-context model | Auto |
-| Unclassifiable or mixed | Auto | N/A |
+Qualification:
+- Remove ineligible models.
+- Enforce required quality first.
+- Prefer lowest expected credits among qualified models.
+- If cost evidence is equal/unavailable, prefer fewer expected tokens.
+- Next tie-breaker is measured accuracy.
+- If no benchmark qualifies, use task-class default and validate.
 
-Use standard context and normal reasoning by default. Increase context or reasoning only when the task requires it.
+Premium escalation requires at least one: high consequence of error; conflicting cross-domain constraints; regulated security/architecture; extended context; observed cheaper-model failure; explicit user request after material cost disclosure.
 
-## 5. Premium escalation
+### 6. Reporting
+Routine execution: do not report model details unless substitution, limitation, approval, or material cost decision occurred.
+Full reporting: include declared/status/resolved/reason/runtime verification when relevant.
+If telemetry is unavailable: `Runtime verification: not exposed by runSubagent telemetry.`
 
-Use governance/MODEL_BENCHMARKS.csv when current evidence exists for the selected agent/task class.
+### 7. Audit/remediation
+Supported models and retirement status are time-sensitive. Verify the official supported-model source before publication or automated remediation.
 
-Qualification algorithm:
-- Remove unavailable, retired, blocked, malformed, utility-only, or disallowed models.
-- Remove models below the task's required quality threshold.
-- Prefer the qualified model with the lowest expected credits.
-- If credit evidence is equal or unavailable, prefer lower expected tokens.
-- Use higher measured accuracy as the next tie-breaker.
-- If no benchmark qualifies, use the task-class default and validate.
-- On validation failure, refine once when the failure is safely correctable; otherwise escalate to the next qualified model.
+Repository commands when present:
+`python scripts/model_audit.py --report`
+`python scripts/model_audit.py --fix`
 
-Premium escalation requires at least one recorded reason:
-- High consequence of error.
-- Conflicting cross-domain constraints.
-- Regulated security or architecture decision.
-- Extended-context requirement.
-- Observed lower-cost-model failure.
-- Explicit user request after cost disclosure.
+`--fix` must produce reviewable changes and must not commit/push/merge/bypass review.
+Prioritize malformed/retired/utility-only, then imminent retirement, high-traffic unpinned T0/T1/T2, then remaining unpinned agents.
 
-Routine repository routing is not, by itself, a reason for premium escalation.
-
-## 6. Runtime reporting
-
-For routine execution, report model details only when a substitution, limitation, approval, or material cost decision occurred.
-
-For Full reporting, include:
-- Declared Model.
-- Model Status.
-- Resolved Model.
-- Resolution Reason.
-- Runtime Verification.
-
-When telemetry is unavailable, write:
-
-`Runtime verification: Not exposed by runSubagent telemetry.`
-
-## 7. Audit and remediation
-
-Model lists and retirement dates change. Verify against the official supported-model source before publication or automated remediation.
-
-Commands:
-
-```bash
-python scripts/model_audit.py --report
-python scripts/model_audit.py --fix
-```
-
-`--fix` must produce reviewable changes and must not commit, push, merge, or bypass review.
-
-Remediation sequence:
-1. Malformed values.
-2. Retired and utility-only pins.
-3. Imminently retiring pins.
-4. High-traffic unpinned T0/T1/T2 agents.
-5. Remaining unpinned agents in reviewed batches.
-
-## 8. Required tests
-
-Validate that:
+### 8. Required policy tests
 - Fast Path does not load model policy.
-- Valid pins are preserved.
-- Invalid and missing pins resolve by task class.
-- Parent model is not reported as specialist runtime evidence.
-- Approval-gated model handling follows organization policy.
-- Unavailable defaults use the documented fallback.
-- Agent selection always precedes model selection.
-- Benchmark qualification rejects models below the required threshold.
-- Cost optimization never bypasses the quality threshold.
-- Validation failure triggers controlled refinement or escalation.
+- Valid pins avoid unnecessary policy/benchmark loading.
+- Invalid/missing pins resolve by task class.
+- Agent selection precedes model selection.
+- Parent model is never runtime evidence.
+- Unavailable default falls back as documented.
+- Benchmark evidence cannot bypass quality threshold.
+- Premium escalation requires a recorded reason.
+- Validation failure causes controlled refinement/escalation.
